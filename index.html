@@ -255,6 +255,145 @@ const LEVELUP_STREAK = 3;
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const DAY_SHORT = ['S','M','T','W','T','F','S'];
 
+/* ---------------- Low-impact substitute exercises ----------------
+   Used when "Knee" or "Back" is selected for the day. Each substitute
+   is a full exercise definition with its own levels — progress on a
+   substitute is tracked separately from the standard move, since it's
+   really a different exercise. This is general guidance, not medical
+   advice: ease off or stop if anything hurts. */
+const SUBS = {
+  chairSitStand: { id:'sub_chairstand', name:'Chair Sit-to-Stand', instructions:[
+      'Sit tall near the front edge of a sturdy chair, feet flat.',
+      'Stand up fully using your legs (hands can push off knees/chair at first), then sit back down under control.',
+      'Keep knees tracking over your toes — avoid letting them cave inward.'
+    ], video:'sit to stand exercise seniors knee friendly',
+    levels:[
+      {name:'Sit-to-Stand (hand-assisted)', sets:3, target:8, unit:'reps'},
+      {name:'Sit-to-Stand (hand-assisted)', sets:3, target:10, unit:'reps'},
+      {name:'Sit-to-Stand (no hands)', sets:3, target:10, unit:'reps'},
+      {name:'Sit-to-Stand (no hands)', sets:3, target:12, unit:'reps'},
+      {name:'Sit-to-Stand (slow 3s lower)', sets:3, target:10, unit:'reps'},
+      {name:'Sit-to-Stand (no hands)', sets:3, target:15, unit:'reps'}
+    ]},
+  hipAbduction: { id:'sub_hipabd', name:'Standing Hip Abduction', instructions:[
+      'Stand tall holding a wall or chair back for balance.',
+      'Keeping your leg straight, lift it out to the side without leaning your torso.',
+      'Lower with control and repeat, then switch sides — no knee bending required.'
+    ], video:'standing hip abduction exercise form',
+    levels:[
+      {name:'Hip Abduction (hand support)', sets:3, target:10, unit:'reps'},
+      {name:'Hip Abduction (hand support)', sets:3, target:12, unit:'reps'},
+      {name:'Hip Abduction (light support)', sets:3, target:12, unit:'reps'},
+      {name:'Hip Abduction (higher lift)', sets:3, target:14, unit:'reps'},
+      {name:'Hip Abduction (slow tempo)', sets:3, target:14, unit:'reps'},
+      {name:'Hip Abduction (no support)', sets:3, target:16, unit:'reps'}
+    ]},
+  gluteBridgeHold: { id:'sub_bridgehold', name:'Glute Bridge Hold', instructions:[
+      'Lie on your back, knees bent, feet flat, close to your glutes.',
+      'Lift hips into a bridge and hold — this loads the hips and low back, not the knees.',
+      'Keep breathing steadily; lower down if you feel any strain.'
+    ], video:'glute bridge hold isometric',
+    levels:[
+      {name:'Glute Bridge Hold', sets:3, target:15, unit:'sec'},
+      {name:'Glute Bridge Hold', sets:3, target:20, unit:'sec'},
+      {name:'Glute Bridge Hold', sets:3, target:30, unit:'sec'},
+      {name:'Glute Bridge Hold', sets:3, target:40, unit:'sec'},
+      {name:'Glute Bridge Hold', sets:3, target:50, unit:'sec'},
+      {name:'Glute Bridge Hold', sets:3, target:60, unit:'sec'}
+    ]},
+  squatReach: { id:'sub_squatreach', name:'Standing Squat-to-Reach', instructions:[
+      'Stand with feet shoulder-width, no jumping and no floor contact.',
+      'Bend knees into a shallow, comfortable squat while reaching arms forward.',
+      'Stand tall and reach arms overhead to finish the rep — smooth and controlled.'
+    ], video:'low impact squat to reach exercise',
+    levels:[
+      {name:'Squat-to-Reach', sets:3, target:6, unit:'reps'},
+      {name:'Squat-to-Reach', sets:3, target:8, unit:'reps'},
+      {name:'Squat-to-Reach', sets:3, target:10, unit:'reps'},
+      {name:'Squat-to-Reach', sets:3, target:12, unit:'reps'},
+      {name:'Squat-to-Reach (slow tempo)', sets:3, target:12, unit:'reps'},
+      {name:'Squat-to-Reach', sets:3, target:16, unit:'reps'}
+    ]},
+  standingMarch: { id:'sub_march', name:'Standing March in Place', instructions:[
+      'Stand tall, march in place lifting knees only as high as comfortable.',
+      'Keep feet low-impact — no jumping, one foot stays grounded at all times.',
+      'Pump your arms gently to keep the pace up without stressing your joints.'
+    ], video:'low impact standing march in place cardio',
+    levels:[
+      {name:'Standing March', sets:3, target:20, unit:'sec'},
+      {name:'Standing March', sets:3, target:30, unit:'sec'},
+      {name:'Standing March', sets:3, target:40, unit:'sec'},
+      {name:'Standing March', sets:3, target:50, unit:'sec'},
+      {name:'Standing March', sets:3, target:60, unit:'sec'},
+      {name:'Standing March (brisker pace)', sets:3, target:75, unit:'sec'}
+    ]},
+  wallSquatPulse: { id:'sub_wallpulse', name:'Standing Squat Pulse (shallow)', instructions:[
+      'Stand with feet hip-width, hand on a wall or chair for balance.',
+      'Bend knees just a few inches into a shallow, pain-free squat and pulse gently.',
+      'Keep the range of motion small and controlled — no jumping.'
+    ], video:'shallow squat pulse knee friendly',
+    levels:[
+      {name:'Squat Pulse (shallow)', sets:3, target:10, unit:'reps'},
+      {name:'Squat Pulse (shallow)', sets:3, target:12, unit:'reps'},
+      {name:'Squat Pulse (shallow)', sets:3, target:14, unit:'reps'},
+      {name:'Squat Pulse (slow tempo)', sets:3, target:14, unit:'reps'},
+      {name:'Squat Pulse (shallow)', sets:3, target:16, unit:'reps'},
+      {name:'Squat Pulse (shallow)', sets:3, target:20, unit:'reps'}
+    ]},
+  birdDog: { id:'sub_birddog', name:'Bird Dog', instructions:[
+      'Start on hands and knees, spine in a neutral, relaxed position.',
+      'Extend one arm and the opposite leg out straight, keeping hips level.',
+      'Hold briefly, return with control, then switch sides — keeps the spine still and supported.'
+    ], video:'bird dog exercise low back safe',
+    levels:[
+      {name:'Bird Dog', sets:3, target:8, unit:'reps'},
+      {name:'Bird Dog', sets:3, target:10, unit:'reps'},
+      {name:'Bird Dog (2s hold)', sets:3, target:12, unit:'reps'},
+      {name:'Bird Dog (2s hold)', sets:3, target:12, unit:'reps'},
+      {name:'Bird Dog (3s hold)', sets:3, target:14, unit:'reps'},
+      {name:'Bird Dog (3s hold)', sets:3, target:16, unit:'reps'}
+    ]},
+  wallSlides: { id:'sub_wallslides', name:'Wall Slides', instructions:[
+      'Stand with your back, head, and arms against a wall, elbows bent at 90°.',
+      'Slide arms upward along the wall as far as comfortable, then back down.',
+      'Keep your low back gently against the wall throughout — no arching.'
+    ], video:'wall slides exercise shoulder back',
+    levels:[
+      {name:'Wall Slides', sets:3, target:10, unit:'reps'},
+      {name:'Wall Slides', sets:3, target:12, unit:'reps'},
+      {name:'Wall Slides', sets:3, target:14, unit:'reps'},
+      {name:'Wall Slides (2s hold at top)', sets:3, target:14, unit:'reps'},
+      {name:'Wall Slides', sets:3, target:16, unit:'reps'},
+      {name:'Wall Slides', sets:3, target:18, unit:'reps'}
+    ]},
+  deadBug: { id:'sub_deadbug', name:'Dead Bug', instructions:[
+      'Lie on your back, arms reaching up, knees bent at 90° over your hips.',
+      'Press your low back gently into the floor and keep it there the whole set.',
+      'Slowly extend one arm and the opposite leg out, return, then switch sides.'
+    ], video:'dead bug exercise proper form back safe',
+    levels:[
+      {name:'Dead Bug', sets:3, target:8, unit:'reps'},
+      {name:'Dead Bug', sets:3, target:10, unit:'reps'},
+      {name:'Dead Bug', sets:3, target:12, unit:'reps'},
+      {name:'Dead Bug (slow tempo)', sets:3, target:12, unit:'reps'},
+      {name:'Dead Bug', sets:3, target:14, unit:'reps'},
+      {name:'Dead Bug', sets:3, target:16, unit:'reps'}
+    ]},
+  modCurlUp: { id:'sub_curlup', name:'Modified Curl-Up', instructions:[
+      'Lie on your back, one knee bent, other leg straight, hands supporting your low back.',
+      'Lift only your head and shoulder blades a few inches off the floor — small range.',
+      'Lower with control. Keep the low back supported and still throughout.'
+    ], video:'modified curl up mcgill low back safe',
+    levels:[
+      {name:'Modified Curl-Up', sets:3, target:8, unit:'reps'},
+      {name:'Modified Curl-Up', sets:3, target:10, unit:'reps'},
+      {name:'Modified Curl-Up', sets:3, target:12, unit:'reps'},
+      {name:'Modified Curl-Up (2s hold)', sets:3, target:12, unit:'reps'},
+      {name:'Modified Curl-Up', sets:3, target:14, unit:'reps'},
+      {name:'Modified Curl-Up', sets:3, target:16, unit:'reps'}
+    ]}
+};
+
 /* ---------------- Program data ---------------- */
 // dow: 1=Mon ... 5=Fri. Each exercise has up to 6 progressive levels.
 // level.unit: 'reps' or 'sec'. level.target is per-set target in that unit.
@@ -327,7 +466,7 @@ const PROGRAM = {
         {name:'Backpack-Weighted Row', sets:3, target:8, unit:'reps'},
         {name:'Single-Arm Towel Row', sets:3, target:6, unit:'reps'}
       ]},
-    { id:'tu2', name:'Superman Hold', instructions:[
+    { id:'tu2', name:'Superman Hold', flags:{back:true}, subs:{back:SUBS.birdDog}, instructions:[
         'Lie face down, arms extended overhead.',
         'Lift chest, arms and legs off the floor simultaneously.',
         'Squeeze your lower back and glutes; hold, then lower with control.'
@@ -340,7 +479,7 @@ const PROGRAM = {
         {name:'Superman Hold', sets:3, target:50, unit:'sec'},
         {name:'Superman Hold', sets:3, target:60, unit:'sec'}
       ]},
-    { id:'tu3', name:'Reverse Snow Angel', instructions:[
+    { id:'tu3', name:'Reverse Snow Angel', flags:{back:true}, subs:{back:SUBS.wallSlides}, instructions:[
         'Lie face down, arms at your sides, palms down.',
         'Sweep arms out and overhead like a snow angel, squeezing shoulder blades.',
         'Return slowly to the start — keep chest lifted throughout.'
@@ -368,7 +507,7 @@ const PROGRAM = {
       ]}
   ]},
   3: { label:'Legs', exercises: [
-    { id:'we1', name:'Bodyweight Squat', instructions:[
+    { id:'we1', name:'Bodyweight Squat', flags:{knee:true}, subs:{knee:SUBS.chairSitStand}, instructions:[
         'Feet shoulder-width, toes slightly out.',
         'Push hips back and bend knees to descend, chest up, until thighs are ~parallel.',
         'Drive through your heels to stand back up.'
@@ -381,7 +520,7 @@ const PROGRAM = {
         {name:'Assisted Pistol Squat', sets:3, target:6, unit:'reps'},
         {name:'Pistol Squat', sets:3, target:4, unit:'reps'}
       ]},
-    { id:'we2', name:'Reverse Lunge', instructions:[
+    { id:'we2', name:'Reverse Lunge', flags:{knee:true}, subs:{knee:SUBS.hipAbduction}, instructions:[
         'Step one foot back, lowering that knee toward the floor.',
         'Front shin stays vertical, chest tall.',
         'Push through the front heel to return to standing; alternate legs.'
@@ -407,7 +546,7 @@ const PROGRAM = {
         {name:'Single-Leg Hip Thrust', sets:3, target:8, unit:'reps'},
         {name:'Single-Leg Hip Thrust (slow tempo)', sets:3, target:10, unit:'reps'}
       ]},
-    { id:'we4', name:'Wall Sit', instructions:[
+    { id:'we4', name:'Wall Sit', flags:{knee:true}, subs:{knee:SUBS.gluteBridgeHold}, instructions:[
         'Back flat against a wall, slide down until knees are at ~90°.',
         'Keep knees over ankles, weight in your heels.',
         'Hold the position, breathing steadily throughout.'
@@ -435,7 +574,7 @@ const PROGRAM = {
         {name:'Side Plank with Reach-Under', sets:3, target:25, unit:'sec'},
         {name:'Side Plank', sets:3, target:45, unit:'sec'}
       ]},
-    { id:'th2', name:'Bicycle Crunch', instructions:[
+    { id:'th2', name:'Bicycle Crunch', flags:{back:true}, subs:{back:SUBS.modCurlUp}, instructions:[
         'Lie on your back, hands lightly behind your head, knees bent to 90°.',
         'Bring opposite elbow toward opposite knee while extending the other leg.',
         'Keep the motion controlled — quality over speed.'
@@ -448,7 +587,7 @@ const PROGRAM = {
         {name:'Bicycle Crunch', sets:3, target:28, unit:'reps'},
         {name:'Bicycle Crunch', sets:3, target:32, unit:'reps'}
       ]},
-    { id:'th3', name:'Leg Raise', instructions:[
+    { id:'th3', name:'Leg Raise', flags:{back:true}, subs:{back:SUBS.deadBug}, instructions:[
         'Lie on your back, hands under your lower back for support if needed.',
         'Keeping legs straight (or knees bent for easier levels), raise them toward the ceiling.',
         'Lower slowly without letting your lower back arch off the floor.'
@@ -461,7 +600,7 @@ const PROGRAM = {
         {name:'Hanging Knee Raise', sets:3, target:8, unit:'reps'},
         {name:'Hanging Leg Raise', sets:3, target:8, unit:'reps'}
       ]},
-    { id:'th4', name:'Mountain Climbers', instructions:[
+    { id:'th4', name:'Mountain Climbers', flags:{knee:true}, subs:{knee:SUBS.standingMarch}, instructions:[
         'Start in a high plank, hands under shoulders.',
         'Drive knees alternately toward your chest at a brisk, controlled pace.',
         'Keep hips low and core tight — don\'t let your hips pop up.'
@@ -476,7 +615,7 @@ const PROGRAM = {
       ]}
   ]},
   5: { label:'Power', exercises: [
-    { id:'fr1', name:'Burpee', instructions:[
+    { id:'fr1', name:'Burpee', flags:{knee:true, back:true}, subs:{knee:SUBS.squatReach, back:SUBS.squatReach}, instructions:[
         'From standing, squat down and place hands on the floor.',
         'Jump feet back to a plank (add a push-up at higher levels), then jump feet back in.',
         'Explode upward into a jump (add tuck jump at higher levels) to finish the rep.'
@@ -489,7 +628,7 @@ const PROGRAM = {
         {name:'Burpee with Tuck Jump', sets:3, target:8, unit:'reps'},
         {name:'Burpee with Tuck Jump', sets:3, target:10, unit:'reps'}
       ]},
-    { id:'fr2', name:'Jump Squat', instructions:[
+    { id:'fr2', name:'Jump Squat', flags:{knee:true}, subs:{knee:SUBS.wallSquatPulse}, instructions:[
         'Start in a squat stance, chest up.',
         'Lower into a squat, then explode upward into a jump.',
         'Land softly, absorbing through bent knees, and reset before the next rep.'
@@ -502,7 +641,7 @@ const PROGRAM = {
         {name:'Jump Squat (max height)', sets:3, target:12, unit:'reps'},
         {name:'Jump Squat', sets:3, target:15, unit:'reps'}
       ]},
-    { id:'fr3', name:'High Knees', instructions:[
+    { id:'fr3', name:'High Knees', flags:{knee:true}, subs:{knee:SUBS.standingMarch}, instructions:[
         'Jog in place, driving knees up toward hip height.',
         'Pump your arms and stay light on your feet.',
         'Keep your torso upright — avoid leaning back.'
@@ -533,7 +672,7 @@ const PROGRAM = {
 
 /* ---------------- State / storage ---------------- */
 function defaultState(){
-  return { progress:{}, bests:{}, logs:{}, cardio:{}, meta:{ createdAt: Date.now() } };
+  return { progress:{}, bests:{}, logs:{}, cardio:{}, dayCondition:{}, forceOriginal:{}, meta:{ createdAt: Date.now() } };
 }
 function loadState(){
   try{
@@ -562,10 +701,31 @@ let VIEW_DATE = todayDate(); // date the Today tab is currently showing (default
 
 function findExercise(id){
   for(const dow in PROGRAM){
-    const ex = PROGRAM[dow].exercises.find(e=>e.id===id);
-    if(ex) return ex;
+    for(const ex of PROGRAM[dow].exercises){
+      if(ex.id===id) return ex;
+      if(ex.subs){
+        if(ex.subs.knee && ex.subs.knee.id===id) return ex.subs.knee;
+        if(ex.subs.back && ex.subs.back.id===id) return ex.subs.back;
+      }
+    }
   }
   return null;
+}
+
+// Given a base exercise and the date, return the version to actually show/log —
+// the standard move, or a lower-impact substitute if a condition is selected
+// for that day and the person hasn't opted to use the original for this one.
+function getEffectiveExercise(ex, ds){
+  const cond = state.dayCondition[ds];
+  const forced = state.forceOriginal[ds] && state.forceOriginal[ds][ex.id];
+  if(!cond || forced || !ex.flags) return ex;
+  if((cond==='knee'||cond==='both') && ex.flags.knee && ex.subs && ex.subs.knee){
+    return Object.assign({}, ex.subs.knee, {_swapFrom:ex, _swapType:'knee'});
+  }
+  if((cond==='back'||cond==='both') && ex.flags.back && ex.subs && ex.subs.back){
+    return Object.assign({}, ex.subs.back, {_swapFrom:ex, _swapType:'back'});
+  }
+  return ex;
 }
 
 /* ---------------- Rendering: tabs ---------------- */
@@ -639,17 +799,33 @@ function renderToday(){
   const day = PROGRAM[dow];
   document.getElementById('headerRight').textContent = day.label + ' Day';
 
+  const cond = state.dayCondition[ds] || '';
+  const effList = day.exercises.map(ex=> ({ base:ex, eff:getEffectiveExercise(ex, ds) }));
+
   let totalSetsTarget=0, totalSetsDone=0;
-  day.exercises.forEach(ex=>{
-    const prog = ensureProgress(ex.id);
-    const lvl = ex.levels[prog.level-1];
-    const logged = (state.logs[ds]&&state.logs[ds][ex.id])? state.logs[ds][ex.id].length : 0;
+  effList.forEach(({eff})=>{
+    const prog = ensureProgress(eff.id);
+    const lvl = eff.levels[prog.level-1];
+    const logged = (state.logs[ds]&&state.logs[ds][eff.id])? state.logs[ds][eff.id].length : 0;
     totalSetsTarget += lvl.sets;
     totalSetsDone += Math.min(logged, lvl.sets);
   });
   const pct = totalSetsTarget? Math.round(100*totalSetsDone/totalSetsTarget) : 0;
 
+  const condBtn = (val, label)=> `<button class="btn sm ${cond===val?'primary':''}" data-cond="${val}">${label}</button>`;
+
   let html = `
+    <div class="card">
+      <h3>How are you feeling today?</h3>
+      <div class="btnrow" style="flex-wrap:wrap; gap:8px;">
+        ${condBtn('', 'Normal')}
+        ${condBtn('knee', 'Knee')}
+        ${condBtn('back', 'Back')}
+        ${condBtn('both', 'Both')}
+      </div>
+      ${cond? `<p class="small muted" style="margin:8px 0 0;">Lower-impact swaps applied where needed today. Not medical advice — ease off or stop if anything hurts, and check with a doctor or physical therapist if pain persists.</p>` : ''}
+    </div>
+
     <div class="card">
       <div class="row"><h3 style="margin:0;">20-Minute Session</h3><span class="pill">${totalSetsDone}/${totalSetsTarget} sets</span></div>
       <div class="progressbar" style="margin:10px 0 12px;"><i style="width:${pct}%"></i></div>
@@ -664,20 +840,22 @@ function renderToday(){
     </div>
   `;
 
-  day.exercises.forEach(ex=>{
-    const prog = ensureProgress(ex.id);
-    const lvl = ex.levels[prog.level-1];
-    const setsToday = (state.logs[ds]&&state.logs[ds][ex.id]) || [];
+  effList.forEach(({base, eff})=>{
+    const prog = ensureProgress(eff.id);
+    const lvl = eff.levels[prog.level-1];
+    const setsToday = (state.logs[ds]&&state.logs[ds][eff.id]) || [];
     const done = Math.min(setsToday.length, lvl.sets);
-    const best = state.bests[ex.id];
-    const ready = prog.streak >= LEVELUP_STREAK && prog.level < ex.levels.length;
+    const best = state.bests[eff.id];
+    const ready = prog.streak >= LEVELUP_STREAK && prog.level < eff.levels.length;
+    const swapped = !!eff._swapFrom;
 
     html += `
-      <div class="exercise-card" data-exid="${ex.id}">
+      <div class="exercise-card" data-exid="${eff.id}" data-ds="${ds}">
         <div class="top">
           <div>
-            <div class="name">${ex.name}</div>
-            <div class="levelname">Lv ${prog.level}/${ex.levels.length} · ${lvl.name}</div>
+            <div class="name">${eff.name}</div>
+            <div class="levelname">Lv ${prog.level}/${eff.levels.length} · ${lvl.name}</div>
+            ${swapped? `<div class="small" style="color:var(--accent);margin-top:3px;" data-untoggle="${base.id}">🔄 Swapped from ${base.name} (${eff._swapType}-friendly) · tap to use original</div>` : ''}
           </div>
           <span class="pill ${done>=lvl.sets?'good':'level'}">${done}/${lvl.sets} sets</span>
         </div>
@@ -692,8 +870,31 @@ function renderToday(){
   });
 
   content.innerHTML = html;
+
+  content.querySelectorAll('[data-cond]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const val = btn.dataset.cond;
+      state.dayCondition[ds] = val || null;
+      if(!val && state.forceOriginal[ds]) delete state.forceOriginal[ds];
+      saveState();
+      renderToday();
+    });
+  });
+
+  content.querySelectorAll('[data-untoggle]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const baseId = el.dataset.untoggle;
+      if(!state.forceOriginal[ds]) state.forceOriginal[ds] = {};
+      state.forceOriginal[ds][baseId] = true;
+      saveState();
+      renderToday();
+    });
+  });
+
   content.querySelectorAll('.exercise-card').forEach(el=>{
-    el.addEventListener('click', ()=>openExerciseSheet(el.dataset.exid, ds));
+    el.addEventListener('click', ()=>openExerciseSheet(el.dataset.exid, el.dataset.ds));
   });
 
   document.getElementById('homerToggle').addEventListener('click', toggleHomer);
@@ -1008,6 +1209,26 @@ function renderProgress(){
     });
     html += `</div>`;
   });
+  // Any low-impact substitutes the person has actually used get their own progress line.
+  const subRows = [];
+  Object.values(SUBS).forEach(sub=>{
+    if(state.progress[sub.id] || state.bests[sub.id]!==undefined){
+      const prog = ensureProgress(sub.id);
+      const lvl = sub.levels[prog.level-1];
+      const best = state.bests[sub.id];
+      subRows.push(`
+        <div style="margin:12px 0;">
+          <div class="row"><span style="font-weight:600;font-size:13.5px;">${sub.name}</span>
+            <span class="pill level">Lv ${prog.level}/${sub.levels.length}</span></div>
+          <div class="progressbar mini" style="margin:6px 0;"><i style="width:${Math.round(100*prog.level/sub.levels.length)}%"></i></div>
+          <div class="small muted">${lvl.name} · Best: ${best!==undefined?formatBest(best,lvl.unit):'—'}</div>
+        </div>`);
+    }
+  });
+  if(subRows.length){
+    html += `<div class="card"><h3>Adapted (knee/back-friendly) Exercises</h3>${subRows.join('')}</div>`;
+  }
+
   html += `<div class="card"><h3>Weekend Cardio</h3><div class="row"><span class="muted small">This week's total</span><span class="pill good">${weeklyCardioMinutes()} min</span></div></div>`;
   el.innerHTML = html;
 }
