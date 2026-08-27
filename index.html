@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Jacked in 20</title>
+<meta name="theme-color" content="#0b0f1a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jacked20">
+<style>
+  :root{
+    --bg:#0b0f1a;
+    --surface:#141a29;
+    --surface2:#1b2233;
+    --border:#232c40;
+    --text:#e8ecf4;
+    --muted:#8a93a8;
+    --accent:#f97316;
+    --accent-dim:#7c3d12;
+    --good:#22c55e;
+    --bad:#ef4444;
+    --radius:16px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    overscroll-behavior-y:none; user-select:none;
+  }
+  input, textarea, select{ user-select:text; }
+  #app{ display:flex; flex-direction:column; height:100vh; height:100dvh; max-width:520px; margin:0 auto; position:relative; }
+  header.topbar{
+    padding:calc(14px + var(--safe-top)) 18px 12px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#12172a,#0b0f1a);
+  }
+  header.topbar .title{ font-size:19px; font-weight:800; letter-spacing:.2px; }
+  header.topbar .title span{ color:var(--accent); }
+  header.topbar .subtitle{ font-size:12.5px; color:var(--muted); margin-top:2px; }
+  main{ flex:1; overflow-y:auto; padding:14px 14px calc(90px + var(--safe-bottom)); -webkit-overflow-scrolling:touch; }
+  .view{ display:none; }
+  .view.active{ display:block; animation:fade .18s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  nav.tabbar{
+    position:absolute; left:0; right:0; bottom:0;
+    display:flex; border-top:1px solid var(--border);
+    background:#0e1322ee; backdrop-filter:blur(10px);
+    padding-bottom:var(--safe-bottom);
+  }
+  nav.tabbar button{
+    flex:1; background:none; border:none; color:var(--muted);
+    padding:10px 4px 8px; font-size:11px; display:flex; flex-direction:column; align-items:center; gap:3px;
+    font-family:inherit;
+  }
+  nav.tabbar button .ic{ font-size:19px; line-height:1; }
+  nav.tabbar button.active{ color:var(--accent); }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:12px; }
+  .card h3{ margin:0 0 6px; font-size:15px; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .muted{ color:var(--muted); }
+  .small{ font-size:12px; }
+  .pill{ display:inline-block; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:700; background:var(--surface2); color:var(--muted); }
+  .pill.level{ background:var(--accent-dim); color:#ffd8b0; }
+  .pill.good{ background:#123324; color:var(--good); }
+  .pill.ready{ background:#3a2a12; color:#ffcf7a; }
+
+  .btn{
+    border:none; border-radius:12px; padding:12px 16px; font-size:15px; font-weight:700;
+    background:var(--surface2); color:var(--text); font-family:inherit;
+  }
+  .btn.primary{ background:var(--accent); color:#1a0e02; }
+  .btn.danger{ background:#3a1414; color:#ff9a9a; }
+  .btn.ghost{ background:transparent; border:1px solid var(--border); color:var(--text); }
+  .btn:active{ transform:scale(.97); }
+  .btn.block{ width:100%; }
+  .btn.sm{ padding:8px 12px; font-size:13px; border-radius:10px; }
+  .btn:disabled{ opacity:.4; }
+
+  .btnrow{ display:flex; gap:10px; }
+
+  .progressbar{ height:8px; border-radius:99px; background:var(--surface2); overflow:hidden; }
+  .progressbar > i{ display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .25s ease; }
+  .progressbar.mini{ height:6px; }
+
+  .exercise-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:10px; }
+  .exercise-card .top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px; }
+  .exercise-card .name{ font-weight:700; font-size:15.5px; }
+  .exercise-card .levelname{ font-size:12.5px; color:var(--muted); margin-top:1px; }
+  .exercise-card .setsdone{ font-size:12px; color:var(--muted); margin-top:8px; }
+
+  dialog#sheet{
+    border:none; padding:0; margin:0; width:100%; max-width:520px;
+    position:fixed; left:50%; bottom:0; transform:translateX(-50%);
+    background:var(--surface); color:var(--text); border-radius:20px 20px 0 0;
+    max-height:92vh; overflow-y:auto;
+  }
+  dialog#sheet::backdrop{ background:rgba(0,0,0,.55); }
+  .sheet-inner{ padding:16px 18px calc(24px + var(--safe-bottom)); }
+  .sheet-handle{ width:38px; height:4px; background:#333f57; border-radius:99px; margin:8px auto 12px; }
+  .sheet-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;}
+  .sheet-head h2{ margin:0; font-size:19px; }
+  .closeX{ background:var(--surface2); border:none; color:var(--text); width:30px; height:30px; border-radius:99px; font-size:16px; }
+
+  select.levelselect{
+    width:100%; background:var(--surface2); color:var(--text); border:1px solid var(--border);
+    padding:10px 12px; border-radius:10px; font-size:14px; font-family:inherit; margin-top:6px;
+  }
+
+  ol.instructions{ margin:8px 0 0; padding-left:20px; font-size:13.5px; color:#c7cede; line-height:1.5; }
+  ol.instructions li{ margin-bottom:5px; }
+
+  a.videolink{ display:inline-flex; align-items:center; gap:6px; color:var(--accent); text-decoration:none; font-size:13.5px; font-weight:700; margin-top:10px; }
+
+  .timerbig{ font-size:52px; font-weight:800; text-align:center; font-variant-numeric:tabular-nums; margin:14px 0 4px; letter-spacing:1px; }
+  .stepper{ display:flex; align-items:center; justify-content:center; gap:18px; margin:14px 0 6px; }
+  .stepper .val{ font-size:44px; font-weight:800; min-width:74px; text-align:center; font-variant-numeric:tabular-nums; }
+  .stepper button{ width:52px; height:52px; border-radius:50%; border:none; background:var(--surface2); color:var(--text); font-size:24px; font-family:inherit; }
+  .stepper button:active{ background:var(--accent); color:#1a0e02; }
+
+  .bestbadge{ text-align:center; font-size:12.5px; color:var(--muted); margin-bottom:4px; }
+  .newpb{ color:var(--accent); font-weight:800; }
+
+  .setlist{ display:flex; flex-wrap:wrap; gap:7px; margin:10px 0; }
+  .setlist span{ background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:6px 10px; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  .setlist span.hit{ border-color:var(--good); color:var(--good); }
+
+  .suggestbanner{
+    background:linear-gradient(135deg,#3a2a12,#241a10); border:1px solid #5a3e1a; color:#ffcf7a;
+    padding:10px 12px; border-radius:12px; font-size:13px; margin:10px 0; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+
+  .homer-timer{ display:flex; align-items:center; justify-content:space-between; }
+  .homer-timer .t{ font-size:34px; font-weight:800; font-variant-numeric:tabular-nums; }
+
+  input[type=number], input[type=text], textarea, select{
+    background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    border-radius:10px; padding:10px 12px; font-size:14px; font-family:inherit; width:100%;
+  }
+  label.flabel{ font-size:12px; color:var(--muted); display:block; margin:10px 0 4px; }
+
+  .weekgrid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:14px;}
+  .weekgrid .d{ text-align:center; font-size:11px; color:var(--muted); padding:8px 2px; border-radius:10px; background:var(--surface); border:1px solid var(--border); }
+  .weekgrid .d.today{ border-color:var(--accent); color:var(--accent); font-weight:800; }
+  .weekgrid .d .dot{ width:6px; height:6px; border-radius:99px; background:var(--good); margin:4px auto 0; }
+
+  .histitem{ border-bottom:1px solid var(--border); padding:10px 0; }
+  .histitem:last-child{ border-bottom:none; }
+  .histitem .date{ font-weight:700; font-size:13.5px; }
+  .histitem .line{ font-size:12.5px; color:var(--muted); margin-top:2px; }
+
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + var(--safe-bottom));
+    background:#1c2337; border:1px solid var(--border); color:var(--text); padding:10px 16px;
+    border-radius:99px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.4); opacity:0; pointer-events:none;
+    transition:opacity .25s, transform .25s; z-index:50; max-width:88%; text-align:center;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(-4px); }
+
+  .emptystate{ text-align:center; color:var(--muted); padding:30px 10px; font-size:13.5px; }
+  .fileinput{ display:none; }
+  hr.sep{ border:none; border-top:1px solid var(--border); margin:16px 0; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div>
+      <div class="title">Jacked in <span>20</span></div>
+      <div class="subtitle" id="headerSubtitle">–</div>
+    </div>
+    <div id="headerRight" class="pill">–</div>
+  </header>
+
+  <main>
+    <!-- TODAY -->
+    <section class="view" id="view-today">
+      <div class="weekgrid" id="weekGrid"></div>
+      <div id="todayContent"></div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section class="view" id="view-progress">
+      <h3 style="margin:4px 0 12px;">Program Progress</h3>
+      <div id="progressContent"></div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="view" id="view-history">
+      <h3 style="margin:4px 0 12px;">History</h3>
+      <div id="historyContent"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="view-settings">
+      <h3 style="margin:4px 0 12px;">Backup &amp; Settings</h3>
+      <div class="card">
+        <h3>Backup your data</h3>
+        <p class="muted small">Everything is stored only on this device. Export a backup file regularly, especially before switching phones or clearing browser data.</p>
+        <div class="btnrow">
+          <button class="btn primary block" id="btnExport">Export Backup</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Restore from backup</h3>
+        <p class="muted small">Restoring will overwrite the app's current progress with what's in the backup file.</p>
+        <button class="btn block" id="btnImportTrigger">Choose Backup File…</button>
+        <input type="file" id="fileInput" class="fileinput" accept="application/json">
+      </div>
+      <div class="card">
+        <h3>Reset progress</h3>
+        <p class="muted small">Wipes all logged sets, levels, and cardio history on this device. Cannot be undone unless you have a backup.</p>
+        <button class="btn danger block" id="btnReset">Erase All Data</button>
+      </div>
+      <div class="card">
+        <h3>How leveling works</h3>
+        <p class="muted small">Each exercise has 6 progressive levels. Hit the full target on every set for an exercise, on <b>3 different days</b>, and it'll be flagged ready to level up — bump it whenever you like from the exercise screen.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-tab="today"><span class="ic">🏋️</span>Today</button>
+    <button class="tab" data-tab="progress"><span class="ic">📈</span>Progress</button>
+    <button class="tab" data-tab="history"><span class="ic">🗓️</span>History</button>
+    <button class="tab" data-tab="settings"><span class="ic">⚙️</span>More</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <dialog id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-inner" id="sheetInner"></div>
+  </dialog>
+
+</div>
+
+<script>
+/* ============================================================
+   JACKED IN 20 — app logic
+   All data stored locally via localStorage. No network calls.
+   ============================================================ */
+
+const DB_KEY = 'jacked20_v1';
+const LEVELUP_STREAK = 3;
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAY_SHORT = ['S','M','T','W','T','F','S'];
+
+/* ---------------- Program data ---------------- */
+// dow: 1=Mon ... 5=Fri. Each exercise has up to 6 progressive levels.
+// level.unit: 'reps' or 'sec'. level.target is per-set target in that unit.
+const PROGRAM = {
+  1: { label:'Push', exercises: [
+    { id:'mo1', name:'Push-Up', instructions:[
+        'Hands under shoulders, body in a straight line from head to heels.',
+        'Lower chest toward the floor with elbows at ~45°, then press back up.',
+        'Keep core and glutes braced the whole rep — no sagging hips.'
+      ], video:'proper push up form tutorial',
+      levels:[
+        {name:'Wall Push-Up', sets:3, target:12, unit:'reps'},
+        {name:'Incline Push-Up (hands elevated)', sets:3, target:10, unit:'reps'},
+        {name:'Knee Push-Up', sets:3, target:10, unit:'reps'},
+        {name:'Full Push-Up', sets:3, target:8, unit:'reps'},
+        {name:'Diamond Push-Up', sets:3, target:8, unit:'reps'},
+        {name:'Archer Push-Up', sets:3, target:6, unit:'reps'}
+      ]},
+    { id:'mo2', name:'Pike Push-Up', instructions:[
+        'Start in a downward-dog position, hips high, hands wider than shoulders.',
+        'Bend elbows to lower the top of your head toward the floor.',
+        'Press back up, keeping hips high throughout — targets shoulders.'
+      ], video:'pike push up progression tutorial',
+      levels:[
+        {name:'Wall-Supported Pike Push-Up', sets:3, target:8, unit:'reps'},
+        {name:'Pike Push-Up (feet flat)', sets:3, target:8, unit:'reps'},
+        {name:'Elevated Pike Push-Up (feet on chair)', sets:3, target:6, unit:'reps'},
+        {name:'Deep Elevated Pike Push-Up', sets:3, target:6, unit:'reps'},
+        {name:'Wall Handstand Push-Up (negative)', sets:3, target:4, unit:'reps'},
+        {name:'Wall Handstand Push-Up', sets:3, target:4, unit:'reps'}
+      ]},
+    { id:'mo3', name:'Triceps Dip', instructions:[
+        'Hands on a stable bench or chair edge, fingers pointing forward.',
+        'Lower your body by bending elbows to ~90°, staying close to the bench.',
+        'Press back up through the palms; keep shoulders down away from ears.'
+      ], video:'bench tricep dip proper form',
+      levels:[
+        {name:'Bent-Knee Bench Dip', sets:3, target:10, unit:'reps'},
+        {name:'Straight-Leg Bench Dip', sets:3, target:10, unit:'reps'},
+        {name:'Elevated-Feet Bench Dip', sets:3, target:8, unit:'reps'},
+        {name:'Slow Tempo Bench Dip (3s down)', sets:3, target:8, unit:'reps'},
+        {name:'Assisted Parallel Bar Dip', sets:3, target:6, unit:'reps'},
+        {name:'Full Parallel Bar Dip', sets:3, target:8, unit:'reps'}
+      ]},
+    { id:'mo4', name:'Plank Hold', instructions:[
+        'Forearms and toes on the floor, elbows under shoulders.',
+        'Squeeze glutes and brace your core — body forms a straight line.',
+        'Breathe steadily; don\'t let hips sag or pike up.'
+      ], video:'how to plank correctly',
+      levels:[
+        {name:'Knee Plank', sets:3, target:20, unit:'sec'},
+        {name:'Forearm Plank', sets:3, target:30, unit:'sec'},
+        {name:'Full Plank', sets:3, target:40, unit:'sec'},
+        {name:'Plank with Shoulder Taps', sets:3, target:40, unit:'sec'},
+        {name:'Plank with Leg Lift', sets:3, target:45, unit:'sec'},
+        {name:'Plank', sets:3, target:60, unit:'sec'}
+      ]}
+  ]},
+  2: { label:'Pull', exercises: [
+    { id:'tu1', name:'Table / Doorframe Row', instructions:[
+        'Grip a sturdy table edge or doorframe, lean back with arms extended, body straight.',
+        'Pull your chest toward your hands, squeezing shoulder blades together.',
+        'Lower under control back to a full stretch.'
+      ], video:'bodyweight table row tutorial',
+      levels:[
+        {name:'Steep Incline Table Row', sets:3, target:10, unit:'reps'},
+        {name:'Table Row', sets:3, target:10, unit:'reps'},
+        {name:'Towel Doorframe Row', sets:3, target:10, unit:'reps'},
+        {name:'Low-Angle Table Row', sets:3, target:8, unit:'reps'},
+        {name:'Backpack-Weighted Row', sets:3, target:8, unit:'reps'},
+        {name:'Single-Arm Towel Row', sets:3, target:6, unit:'reps'}
+      ]},
+    { id:'tu2', name:'Superman Hold', instructions:[
+        'Lie face down, arms extended overhead.',
+        'Lift chest, arms and legs off the floor simultaneously.',
+        'Squeeze your lower back and glutes; hold, then lower with control.'
+      ], video:'superman exercise correct form',
+      levels:[
+        {name:'Superman Hold', sets:3, target:15, unit:'sec'},
+        {name:'Superman Hold', sets:3, target:30, unit:'sec'},
+        {name:'Superman Arm + Leg Raise (alternating)', sets:3, target:30, unit:'sec'},
+        {name:'Superman Hold', sets:3, target:40, unit:'sec'},
+        {name:'Superman Hold', sets:3, target:50, unit:'sec'},
+        {name:'Superman Hold', sets:3, target:60, unit:'sec'}
+      ]},
+    { id:'tu3', name:'Reverse Snow Angel', instructions:[
+        'Lie face down, arms at your sides, palms down.',
+        'Sweep arms out and overhead like a snow angel, squeezing shoulder blades.',
+        'Return slowly to the start — keep chest lifted throughout.'
+      ], video:'reverse snow angel exercise',
+      levels:[
+        {name:'Reverse Snow Angel', sets:3, target:10, unit:'reps'},
+        {name:'Reverse Snow Angel', sets:3, target:12, unit:'reps'},
+        {name:'Reverse Snow Angel', sets:3, target:15, unit:'reps'},
+        {name:'Reverse Snow Angel (2s hold at top)', sets:3, target:12, unit:'reps'},
+        {name:'Reverse Snow Angel', sets:3, target:18, unit:'reps'},
+        {name:'Reverse Snow Angel', sets:3, target:20, unit:'reps'}
+      ]},
+    { id:'tu4', name:'Hang & Pull-Up', instructions:[
+        'Find a sturdy bar, branch, or playground equipment.',
+        'Early levels: just hang with arms extended, shoulders active (not fully relaxed).',
+        'Later levels: pull your chin over the bar, then lower slowly (3-5s) for negatives.'
+      ], video:'dead hang to pull up progression',
+      levels:[
+        {name:'Dead Hang', sets:3, target:15, unit:'sec'},
+        {name:'Dead Hang', sets:3, target:30, unit:'sec'},
+        {name:'Negative Pull-Up (slow lower)', sets:3, target:5, unit:'reps'},
+        {name:'Band-Assisted Pull-Up', sets:3, target:5, unit:'reps'},
+        {name:'Pull-Up', sets:3, target:3, unit:'reps'},
+        {name:'Pull-Up', sets:3, target:6, unit:'reps'}
+      ]}
+  ]},
+  3: { label:'Legs', exercises: [
+    { id:'we1', name:'Bodyweight Squat', instructions:[
+        'Feet shoulder-width, toes slightly out.',
+        'Push hips back and bend knees to descend, chest up, until thighs are ~parallel.',
+        'Drive through your heels to stand back up.'
+      ], video:'bodyweight squat proper form',
+      levels:[
+        {name:'Chair-Assisted Squat', sets:3, target:12, unit:'reps'},
+        {name:'Bodyweight Squat', sets:3, target:15, unit:'reps'},
+        {name:'Paused Squat (2s at bottom)', sets:3, target:12, unit:'reps'},
+        {name:'Jump Squat', sets:3, target:10, unit:'reps'},
+        {name:'Assisted Pistol Squat', sets:3, target:6, unit:'reps'},
+        {name:'Pistol Squat', sets:3, target:4, unit:'reps'}
+      ]},
+    { id:'we2', name:'Reverse Lunge', instructions:[
+        'Step one foot back, lowering that knee toward the floor.',
+        'Front shin stays vertical, chest tall.',
+        'Push through the front heel to return to standing; alternate legs.'
+      ], video:'reverse lunge tutorial',
+      levels:[
+        {name:'Reverse Lunge (hand-assisted balance)', sets:3, target:8, unit:'reps'},
+        {name:'Reverse Lunge', sets:3, target:10, unit:'reps'},
+        {name:'Walking Lunge', sets:3, target:12, unit:'reps'},
+        {name:'Reverse Lunge (3s lower)', sets:3, target:10, unit:'reps'},
+        {name:'Jump Lunge', sets:3, target:8, unit:'reps'},
+        {name:'Bulgarian Split Squat (rear foot elevated)', sets:3, target:8, unit:'reps'}
+      ]},
+    { id:'we3', name:'Glute Bridge', instructions:[
+        'Lie on your back, knees bent, feet flat near your glutes.',
+        'Drive hips up by squeezing glutes until body forms a straight line knee-to-shoulder.',
+        'Lower with control, don\'t let hips fully rest between reps.'
+      ], video:'glute bridge exercise tutorial',
+      levels:[
+        {name:'Glute Bridge', sets:3, target:12, unit:'reps'},
+        {name:'Glute Bridge (2s pause at top)', sets:3, target:12, unit:'reps'},
+        {name:'Single-Leg Glute Bridge', sets:3, target:8, unit:'reps'},
+        {name:'Hip Thrust (shoulders elevated)', sets:3, target:12, unit:'reps'},
+        {name:'Single-Leg Hip Thrust', sets:3, target:8, unit:'reps'},
+        {name:'Single-Leg Hip Thrust (slow tempo)', sets:3, target:10, unit:'reps'}
+      ]},
+    { id:'we4', name:'Wall Sit', instructions:[
+        'Back flat against a wall, slide down until knees are at ~90°.',
+        'Keep knees over ankles, weight in your heels.',
+        'Hold the position, breathing steadily throughout.'
+      ], video:'wall sit exercise form',
+      levels:[
+        {name:'Wall Sit', sets:3, target:20, unit:'sec'},
+        {name:'Wall Sit', sets:3, target:30, unit:'sec'},
+        {name:'Wall Sit', sets:3, target:40, unit:'sec'},
+        {name:'Wall Sit', sets:3, target:50, unit:'sec'},
+        {name:'Wall Sit', sets:3, target:60, unit:'sec'},
+        {name:'Single-Leg Wall Sit (alternate)', sets:3, target:20, unit:'sec'}
+      ]}
+  ]},
+  4: { label:'Core', exercises: [
+    { id:'th1', name:'Side Plank', instructions:[
+        'Lie on your side, prop up on one forearm, elbow under shoulder.',
+        'Lift hips so body forms a straight line; stack feet or stagger for balance.',
+        'Keep hips high and level — don\'t let them sag toward the floor.'
+      ], video:'side plank correct form',
+      levels:[
+        {name:'Side Plank (bottom knee down)', sets:3, target:15, unit:'sec'},
+        {name:'Side Plank', sets:3, target:20, unit:'sec'},
+        {name:'Side Plank', sets:3, target:30, unit:'sec'},
+        {name:'Side Plank with Leg Lift', sets:3, target:25, unit:'sec'},
+        {name:'Side Plank with Reach-Under', sets:3, target:25, unit:'sec'},
+        {name:'Side Plank', sets:3, target:45, unit:'sec'}
+      ]},
+    { id:'th2', name:'Bicycle Crunch', instructions:[
+        'Lie on your back, hands lightly behind your head, knees bent to 90°.',
+        'Bring opposite elbow toward opposite knee while extending the other leg.',
+        'Keep the motion controlled — quality over speed.'
+      ], video:'bicycle crunch tutorial',
+      levels:[
+        {name:'Bicycle Crunch', sets:3, target:16, unit:'reps'},
+        {name:'Bicycle Crunch', sets:3, target:20, unit:'reps'},
+        {name:'Bicycle Crunch', sets:3, target:24, unit:'reps'},
+        {name:'Bicycle Crunch (slow tempo)', sets:3, target:20, unit:'reps'},
+        {name:'Bicycle Crunch', sets:3, target:28, unit:'reps'},
+        {name:'Bicycle Crunch', sets:3, target:32, unit:'reps'}
+      ]},
+    { id:'th3', name:'Leg Raise', instructions:[
+        'Lie on your back, hands under your lower back for support if needed.',
+        'Keeping legs straight (or knees bent for easier levels), raise them toward the ceiling.',
+        'Lower slowly without letting your lower back arch off the floor.'
+      ], video:'leg raise proper form abs',
+      levels:[
+        {name:'Bent-Knee Leg Raise', sets:3, target:10, unit:'reps'},
+        {name:'Straight-Leg Raise (lying)', sets:3, target:10, unit:'reps'},
+        {name:'Flutter Kicks (count each kick)', sets:3, target:20, unit:'reps'},
+        {name:'Straight-Leg Raise (slow tempo)', sets:3, target:12, unit:'reps'},
+        {name:'Hanging Knee Raise', sets:3, target:8, unit:'reps'},
+        {name:'Hanging Leg Raise', sets:3, target:8, unit:'reps'}
+      ]},
+    { id:'th4', name:'Mountain Climbers', instructions:[
+        'Start in a high plank, hands under shoulders.',
+        'Drive knees alternately toward your chest at a brisk, controlled pace.',
+        'Keep hips low and core tight — don\'t let your hips pop up.'
+      ], video:'mountain climbers exercise form',
+      levels:[
+        {name:'Mountain Climbers', sets:3, target:20, unit:'sec'},
+        {name:'Mountain Climbers', sets:3, target:30, unit:'sec'},
+        {name:'Mountain Climbers', sets:3, target:40, unit:'sec'},
+        {name:'Mountain Climbers', sets:3, target:50, unit:'sec'},
+        {name:'Mountain Climbers', sets:3, target:60, unit:'sec'},
+        {name:'Mountain Climbers (fast pace)', sets:3, target:60, unit:'sec'}
+      ]}
+  ]},
+  5: { label:'Power', exercises: [
+    { id:'fr1', name:'Burpee', instructions:[
+        'From standing, squat down and place hands on the floor.',
+        'Jump feet back to a plank (add a push-up at higher levels), then jump feet back in.',
+        'Explode upward into a jump (add tuck jump at higher levels) to finish the rep.'
+      ], video:'burpee proper form tutorial',
+      levels:[
+        {name:'Half Burpee (step back, no jump)', sets:3, target:8, unit:'reps'},
+        {name:'Burpee (no push-up)', sets:3, target:8, unit:'reps'},
+        {name:'Full Burpee (with push-up)', sets:3, target:8, unit:'reps'},
+        {name:'Full Burpee', sets:3, target:10, unit:'reps'},
+        {name:'Burpee with Tuck Jump', sets:3, target:8, unit:'reps'},
+        {name:'Burpee with Tuck Jump', sets:3, target:10, unit:'reps'}
+      ]},
+    { id:'fr2', name:'Jump Squat', instructions:[
+        'Start in a squat stance, chest up.',
+        'Lower into a squat, then explode upward into a jump.',
+        'Land softly, absorbing through bent knees, and reset before the next rep.'
+      ], video:'jump squat exercise form',
+      levels:[
+        {name:'Squat Pulse (no jump)', sets:3, target:12, unit:'reps'},
+        {name:'Jump Squat', sets:3, target:10, unit:'reps'},
+        {name:'Jump Squat', sets:3, target:12, unit:'reps'},
+        {name:'Broad Jump Squat', sets:3, target:10, unit:'reps'},
+        {name:'Jump Squat (max height)', sets:3, target:12, unit:'reps'},
+        {name:'Jump Squat', sets:3, target:15, unit:'reps'}
+      ]},
+    { id:'fr3', name:'High Knees', instructions:[
+        'Jog in place, driving knees up toward hip height.',
+        'Pump your arms and stay light on your feet.',
+        'Keep your torso upright — avoid leaning back.'
+      ], video:'high knees exercise form',
+      levels:[
+        {name:'High Knees', sets:3, target:20, unit:'sec'},
+        {name:'High Knees', sets:3, target:30, unit:'sec'},
+        {name:'High Knees', sets:3, target:40, unit:'sec'},
+        {name:'High Knees', sets:3, target:50, unit:'sec'},
+        {name:'High Knees', sets:3, target:60, unit:'sec'},
+        {name:'High Knees (max speed)', sets:3, target:60, unit:'sec'}
+      ]},
+    { id:'fr4', name:'Plank-Up (Plank to Push-Up)', instructions:[
+        'Start in a forearm plank.',
+        'Push up one hand at a time into a high plank/push-up position.',
+        'Lower back down one arm at a time, alternating the leading arm each rep.'
+      ], video:'plank up exercise tutorial',
+      levels:[
+        {name:'Plank-Up', sets:3, target:6, unit:'reps'},
+        {name:'Plank-Up', sets:3, target:8, unit:'reps'},
+        {name:'Plank-Up', sets:3, target:10, unit:'reps'},
+        {name:'Plank-Up (slow tempo)', sets:3, target:8, unit:'reps'},
+        {name:'Plank-Up', sets:3, target:12, unit:'reps'},
+        {name:'Plank-Up', sets:3, target:14, unit:'reps'}
+      ]}
+  ]}
+};
+
+/* ---------------- State / storage ---------------- */
+function defaultState(){
+  return { progress:{}, bests:{}, logs:{}, cardio:{}, meta:{ createdAt: Date.now() } };
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed);
+  }catch(e){
+    console.error('Failed to load state, starting fresh', e);
+    return defaultState();
+  }
+}
+function saveState(){ localStorage.setItem(DB_KEY, JSON.stringify(state)); }
+let state = loadState();
+
+function ensureProgress(exId){
+  if(!state.progress[exId]) state.progress[exId] = { level:1, streak:0, lastSuccessDate:null };
+  return state.progress[exId];
+}
+
+/* ---------------- Date helpers ---------------- */
+function pad2(n){ return n<10 ? '0'+n : ''+n; }
+function dateStr(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function todayDate(){ return new Date(); }
+let VIEW_DATE = todayDate(); // date the Today tab is currently showing (defaults to today, can't navigate forward)
+
+function findExercise(id){
+  for(const dow in PROGRAM){
+    const ex = PROGRAM[dow].exercises.find(e=>e.id===id);
+    if(ex) return ex;
+  }
+  return null;
+}
+
+/* ---------------- Rendering: tabs ---------------- */
+const views = ['today','progress','history','settings'];
+function switchTab(tab){
+  views.forEach(v=>{
+    document.getElementById('view-'+v).classList.toggle('active', v===tab);
+  });
+  document.querySelectorAll('nav.tabbar .tab').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===tab);
+  });
+  if(tab==='today') renderToday();
+  if(tab==='progress') renderProgress();
+  if(tab==='history') renderHistory();
+}
+document.querySelectorAll('nav.tabbar .tab').forEach(b=>{
+  b.addEventListener('click', ()=>switchTab(b.dataset.tab));
+});
+
+/* ---------------- Week strip ---------------- */
+function renderWeekGrid(){
+  const grid = document.getElementById('weekGrid');
+  const today = todayDate();
+  const curDow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((curDow+6)%7)); // back up to Monday
+  let html = '';
+  for(let i=0;i<7;i++){
+    const d = new Date(monday);
+    d.setDate(monday.getDate()+i);
+    const isToday = dateStr(d)===dateStr(VIEW_DATE);
+    const ds = dateStr(d);
+    const hasActivity = !!state.logs[ds] && Object.keys(state.logs[ds]).length>0 || (state.cardio[ds] && state.cardio[ds].length>0);
+    html += `<div class="d ${isToday?'today':''}" data-date="${ds}">
+      ${DAY_SHORT[d.getDay()]}<br>${d.getDate()}
+      ${hasActivity? '<div class="dot"></div>' : '<div style="height:6px;margin-top:4px;"></div>'}
+    </div>`;
+  }
+  grid.innerHTML = html;
+  grid.querySelectorAll('.d').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const ds = el.dataset.date;
+      const [y,m,dd] = ds.split('-').map(Number);
+      const chosen = new Date(y, m-1, dd);
+      if(chosen > todayDate() && dateStr(chosen)!==dateStr(todayDate())) return; // no future days
+      VIEW_DATE = chosen;
+      renderToday();
+    });
+  });
+}
+
+/* ---------------- Today view ---------------- */
+let homerInterval = null, homerSeconds = 20*60, homerRunning = false;
+
+function renderToday(){
+  renderWeekGrid();
+  const dow = VIEW_DATE.getDay();
+  const ds = dateStr(VIEW_DATE);
+  const isToday = ds === dateStr(todayDate());
+  document.getElementById('headerSubtitle').textContent =
+    (isToday? 'Today · ' : '') + DAY_NAMES[dow] + ', ' + VIEW_DATE.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+
+  const content = document.getElementById('todayContent');
+
+  if(dow===0 || dow===6){
+    document.getElementById('headerRight').textContent = 'Cardio';
+    renderCardioDay(ds, content);
+    return;
+  }
+
+  const day = PROGRAM[dow];
+  document.getElementById('headerRight').textContent = day.label + ' Day';
+
+  let totalSetsTarget=0, totalSetsDone=0;
+  day.exercises.forEach(ex=>{
+    const prog = ensureProgress(ex.id);
+    const lvl = ex.levels[prog.level-1];
+    const logged = (state.logs[ds]&&state.logs[ds][ex.id])? state.logs[ds][ex.id].length : 0;
+    totalSetsTarget += lvl.sets;
+    totalSetsDone += Math.min(logged, lvl.sets);
+  });
+  const pct = totalSetsTarget? Math.round(100*totalSetsDone/totalSetsTarget) : 0;
+
+  let html = `
+    <div class="card">
+      <div class="row"><h3 style="margin:0;">20-Minute Session</h3><span class="pill">${totalSetsDone}/${totalSetsTarget} sets</span></div>
+      <div class="progressbar" style="margin:10px 0 12px;"><i style="width:${pct}%"></i></div>
+      <div class="homer-timer">
+        <div class="t" id="homerDisplay">${formatClock(homerSeconds)}</div>
+        <div class="btnrow">
+          <button class="btn sm" id="homerToggle">${homerRunning?'Pause':'Start'}</button>
+          <button class="btn sm ghost" id="homerReset">Reset</button>
+        </div>
+      </div>
+      <p class="small muted" style="margin:8px 0 0;">Optional guide — do your 4 exercises below in any order, resting as needed. Log every set as you go.</p>
+    </div>
+  `;
+
+  day.exercises.forEach(ex=>{
+    const prog = ensureProgress(ex.id);
+    const lvl = ex.levels[prog.level-1];
+    const setsToday = (state.logs[ds]&&state.logs[ds][ex.id]) || [];
+    const done = Math.min(setsToday.length, lvl.sets);
+    const best = state.bests[ex.id];
+    const ready = prog.streak >= LEVELUP_STREAK && prog.level < ex.levels.length;
+
+    html += `
+      <div class="exercise-card" data-exid="${ex.id}">
+        <div class="top">
+          <div>
+            <div class="name">${ex.name}</div>
+            <div class="levelname">Lv ${prog.level}/${ex.levels.length} · ${lvl.name}</div>
+          </div>
+          <span class="pill ${done>=lvl.sets?'good':'level'}">${done}/${lvl.sets} sets</span>
+        </div>
+        <div class="progressbar mini"><i style="width:${Math.round(100*done/lvl.sets)}%"></i></div>
+        <div class="setsdone">
+          Target: ${lvl.target}${lvl.unit==='sec'?'s':' reps'} per set
+          ${best!==undefined? ' · Best: '+formatBest(best,lvl.unit) : ''}
+        </div>
+        ${ready? `<div class="suggestbanner"><span>🔥 Ready to level up!</span></div>` : ''}
+      </div>
+    `;
+  });
+
+  content.innerHTML = html;
+  content.querySelectorAll('.exercise-card').forEach(el=>{
+    el.addEventListener('click', ()=>openExerciseSheet(el.dataset.exid, ds));
+  });
+
+  document.getElementById('homerToggle').addEventListener('click', toggleHomer);
+  document.getElementById('homerReset').addEventListener('click', resetHomer);
+}
+
+function formatBest(v, unit){ return unit==='sec' ? v+'s' : v+' reps'; }
+function formatClock(totalSec){
+  const s = Math.max(0,totalSec);
+  const m = Math.floor(s/60);
+  const sec = s%60;
+  return pad2(m)+':'+pad2(sec);
+}
+function toggleHomer(){
+  homerRunning = !homerRunning;
+  if(homerRunning){
+    homerInterval = setInterval(()=>{
+      homerSeconds--;
+      const d = document.getElementById('homerDisplay');
+      if(d) d.textContent = formatClock(homerSeconds);
+      if(homerSeconds<=0){
+        clearInterval(homerInterval); homerRunning=false;
+        if(navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
+        showToast("Time's up — nice work! 💪");
+        const btn = document.getElementById('homerToggle'); if(btn) btn.textContent='Start';
+      }
+    },1000);
+  } else {
+    clearInterval(homerInterval);
+  }
+  const btn = document.getElementById('homerToggle');
+  if(btn) btn.textContent = homerRunning?'Pause':'Start';
+}
+function resetHomer(){
+  clearInterval(homerInterval); homerRunning=false; homerSeconds=20*60;
+  const d = document.getElementById('homerDisplay'); if(d) d.textContent = formatClock(homerSeconds);
+  const btn = document.getElementById('homerToggle'); if(btn) btn.textContent='Start';
+}
+
+/* ---------------- Cardio (weekend) ---------------- */
+function renderCardioDay(ds, content){
+  const entries = state.cardio[ds] || [];
+  const weekTotal = weeklyCardioMinutes();
+  let html = `
+    <div class="card">
+      <h3>Log Cardio</h3>
+      <label class="flabel">Activity</label>
+      <select id="cardioActivity">
+        <option>Run</option><option>Walk</option><option>Bike</option><option>Swim</option>
+        <option>Row</option><option>Hike</option><option>Sport</option><option>Other</option>
+      </select>
+      <label class="flabel">Duration (minutes)</label>
+      <input type="number" id="cardioMinutes" min="0" step="1" placeholder="e.g. 30">
+      <label class="flabel">Distance (optional)</label>
+      <input type="text" id="cardioDistance" placeholder="e.g. 5 km">
+      <label class="flabel">Notes (optional)</label>
+      <input type="text" id="cardioNotes" placeholder="How did it feel?">
+      <button class="btn primary block" id="btnLogCardio" style="margin-top:14px;">Log Cardio Session</button>
+    </div>
+    <div class="card">
+      <div class="row"><h3 style="margin:0;">This Week</h3><span class="pill">${weekTotal} min</span></div>
+    </div>
+  `;
+
+  if(entries.length===0){
+    html += `<div class="emptystate">No cardio logged for this day yet.<br>Get outside — even a walk counts.</div>`;
+  } else {
+    html += `<div class="card"><h3>Today's Sessions</h3>`;
+    entries.slice().reverse().forEach((e,idx)=>{
+      const realIdx = entries.length-1-idx;
+      html += `<div class="histitem">
+        <div class="row"><span class="date">${e.activity}${e.distance? ' · '+e.distance:''}</span><span class="pill">${e.minutes} min</span></div>
+        ${e.notes? `<div class="line">${escapeHtml(e.notes)}</div>`:''}
+        <div class="line">${new Date(e.ts).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}
+          <span style="float:right;color:var(--bad);cursor:pointer;" data-del="${realIdx}">Remove</span>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  content.innerHTML = html;
+  document.getElementById('btnLogCardio').addEventListener('click', ()=>{
+    const activity = document.getElementById('cardioActivity').value;
+    const minutes = parseInt(document.getElementById('cardioMinutes').value,10);
+    const distance = document.getElementById('cardioDistance').value.trim();
+    const notes = document.getElementById('cardioNotes').value.trim();
+    if(!minutes || minutes<=0){ showToast('Enter a duration first'); return; }
+    if(!state.cardio[ds]) state.cardio[ds]=[];
+    state.cardio[ds].push({activity, minutes, distance, notes, ts:Date.now()});
+    saveState();
+    showToast('Cardio session logged 🏃');
+    renderToday();
+  });
+  content.querySelectorAll('[data-del]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = parseInt(el.dataset.del,10);
+      state.cardio[ds].splice(idx,1);
+      saveState();
+      renderToday();
+    });
+  });
+}
+function weeklyCardioMinutes(){
+  const today = todayDate();
+  const curDow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((curDow+6)%7));
+  let total=0;
+  for(let i=0;i<7;i++){
+    const d = new Date(monday); d.setDate(monday.getDate()+i);
+    const ds = dateStr(d);
+    (state.cardio[ds]||[]).forEach(e=> total+=e.minutes||0);
+  }
+  return total;
+}
+
+/* ---------------- Exercise sheet (detail / logging) ---------------- */
+const sheet = document.getElementById('sheet');
+let sheetTimer = { running:false, elapsed:0, interval:null };
+let sheetStepperVal = 0;
+
+function openExerciseSheet(exId, ds){
+  const ex = findExercise(exId);
+  const prog = ensureProgress(exId);
+  renderSheetContent(ex, prog, ds);
+  sheet.showModal();
+}
+function closeSheet(){
+  if(sheetTimer.interval) clearInterval(sheetTimer.interval);
+  sheetTimer = { running:false, elapsed:0, interval:null };
+  sheet.close();
+}
+
+function renderSheetContent(ex, prog, ds){
+  const lvl = ex.levels[prog.level-1];
+  const setsToday = (state.logs[ds]&&state.logs[ds][ex.id]) || [];
+  const best = state.bests[ex.id];
+  sheetStepperVal = lvl.target;
+
+  let levelOptions = ex.levels.map((l,i)=>
+    `<option value="${i+1}" ${i+1===prog.level?'selected':''}>Lv ${i+1} — ${l.name} (${l.sets}×${l.target}${l.unit==='sec'?'s':''})</option>`
+  ).join('');
+
+  const readyToLevel = prog.streak >= LEVELUP_STREAK && prog.level < ex.levels.length;
+  const videoUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(ex.video);
+
+  const setsHtml = setsToday.map(s=>{
+    const hit = s.v >= lvl.target;
+    return `<span class="${hit?'hit':''}">${s.v}${s.unit==='sec'?'s':''}</span>`;
+  }).join('');
+
+  document.getElementById('sheetInner').innerHTML = `
+    <div class="sheet-head">
+      <div>
+        <h2>${ex.name}</h2>
+        <div class="muted small">${lvl.name}</div>
+      </div>
+      <button class="closeX" id="sheetClose">✕</button>
+    </div>
+
+    ${readyToLevel? `<div class="suggestbanner"><span>🔥 Ready for Level ${prog.level+1}!</span>
+        <button class="btn sm primary" id="btnLevelUp">Advance</button></div>` : ''}
+
+    <label class="flabel">Level</label>
+    <select class="levelselect" id="levelSelect">${levelOptions}</select>
+
+    <div class="bestbadge" id="bestBadge">
+      ${best!==undefined? 'Personal best: '+formatBest(best,lvl.unit) : 'No personal best yet — set one today'}
+    </div>
+
+    <div id="loggerArea"></div>
+
+    <div class="row" style="margin-top:8px;">
+      <span class="small muted">Sets logged today (${setsToday.length}/${lvl.sets})</span>
+    </div>
+    <div class="setlist" id="setList">${setsHtml || '<span class="muted">None yet</span>'}</div>
+
+    <hr class="sep">
+    <h3 style="margin:0 0 4px;">How to do it</h3>
+    <ol class="instructions">${ex.instructions.map(i=>`<li>${i}</li>`).join('')}</ol>
+    <a class="videolink" href="${videoUrl}" target="_blank" rel="noopener">▶ Watch form videos</a>
+  `;
+
+  document.getElementById('sheetClose').addEventListener('click', closeSheet);
+  document.getElementById('levelSelect').addEventListener('change', (e)=>{
+    prog.level = parseInt(e.target.value,10);
+    saveState();
+    renderSheetContent(ex, prog, ds);
+  });
+  const lvlUpBtn = document.getElementById('btnLevelUp');
+  if(lvlUpBtn) lvlUpBtn.addEventListener('click', ()=>{
+    prog.level = Math.min(ex.levels.length, prog.level+1);
+    prog.streak = 0;
+    saveState();
+    showToast('Leveled up to Level '+prog.level+'! 🎉');
+    renderSheetContent(ex, prog, ds);
+  });
+
+  renderLogger(ex, prog, ds, lvl);
+}
+
+function renderLogger(ex, prog, ds, lvl){
+  const area = document.getElementById('loggerArea');
+  if(lvl.unit==='sec'){
+    area.innerHTML = `
+      <div class="timerbig" id="timerDisplay">${formatClock(sheetTimer.elapsed)}</div>
+      <div class="btnrow" style="justify-content:center;">
+        <button class="btn sm" id="tStart">${sheetTimer.running?'Pause':'Start'}</button>
+        <button class="btn sm ghost" id="tReset">Reset</button>
+        <button class="btn sm primary" id="tLog">Log Set</button>
+      </div>
+      <p class="small muted" style="text-align:center;margin-top:10px;">Target: ${lvl.target}s · Start the timer, hold the position, then Log Set.</p>
+    `;
+    document.getElementById('tStart').addEventListener('click', ()=>{
+      sheetTimer.running = !sheetTimer.running;
+      if(sheetTimer.running){
+        sheetTimer.interval = setInterval(()=>{
+          sheetTimer.elapsed++;
+          const d = document.getElementById('timerDisplay');
+          if(d) d.textContent = formatClock(sheetTimer.elapsed);
+        },1000);
+      } else {
+        clearInterval(sheetTimer.interval);
+      }
+      document.getElementById('tStart').textContent = sheetTimer.running?'Pause':'Start';
+    });
+    document.getElementById('tReset').addEventListener('click', ()=>{
+      clearInterval(sheetTimer.interval);
+      sheetTimer = {running:false, elapsed:0, interval:null};
+      document.getElementById('timerDisplay').textContent = formatClock(0);
+      document.getElementById('tStart').textContent='Start';
+    });
+    document.getElementById('tLog').addEventListener('click', ()=>{
+      clearInterval(sheetTimer.interval);
+      const val = sheetTimer.elapsed;
+      if(val<=0){ showToast('Start the timer first'); return; }
+      logSet(ex, prog, ds, lvl, val, 'sec');
+      sheetTimer = {running:false, elapsed:0, interval:null};
+      renderSheetContent(ex, prog, ds);
+    });
+  } else {
+    area.innerHTML = `
+      <div class="stepper">
+        <button id="stepDown">−</button>
+        <div class="val" id="stepVal">${sheetStepperVal}</div>
+        <button id="stepUp">+</button>
+      </div>
+      <p class="small muted" style="text-align:center;">Target: ${lvl.target} reps</p>
+      <button class="btn primary block" id="repLog">Log Set (${sheetStepperVal} reps)</button>
+    `;
+    const upd = ()=>{
+      document.getElementById('stepVal').textContent = sheetStepperVal;
+      document.getElementById('repLog').textContent = 'Log Set ('+sheetStepperVal+' reps)';
+    };
+    document.getElementById('stepDown').addEventListener('click', ()=>{ sheetStepperVal=Math.max(0,sheetStepperVal-1); upd(); });
+    document.getElementById('stepUp').addEventListener('click', ()=>{ sheetStepperVal++; upd(); });
+    document.getElementById('repLog').addEventListener('click', ()=>{
+      if(sheetStepperVal<=0){ showToast('Log at least 1 rep'); return; }
+      logSet(ex, prog, ds, lvl, sheetStepperVal, 'reps');
+      sheetStepperVal = lvl.target;
+      renderSheetContent(ex, prog, ds);
+    });
+  }
+}
+
+function logSet(ex, prog, ds, lvl, val, unit){
+  if(!state.logs[ds]) state.logs[ds]={};
+  if(!state.logs[ds][ex.id]) state.logs[ds][ex.id]=[];
+  state.logs[ds][ex.id].push({v:val, unit, ts:Date.now()});
+
+  let newPB=false;
+  if(state.bests[ex.id]===undefined || val>state.bests[ex.id]){
+    state.bests[ex.id]=val; newPB=true;
+  }
+
+  // Evaluate "day success" for leveling: all of the last `lvl.sets` sets meet/exceed target
+  const setsToday = state.logs[ds][ex.id];
+  if(setsToday.length >= lvl.sets){
+    const lastN = setsToday.slice(-lvl.sets);
+    const allHit = lastN.every(s=>s.v>=lvl.target);
+    if(allHit && prog.lastSuccessDate!==ds){
+      prog.streak = (prog.streak||0)+1;
+      prog.lastSuccessDate = ds;
+    }
+  }
+
+  saveState();
+  showToast(newPB? '🎉 New personal best!' : 'Set logged');
+}
+
+/* ---------------- Progress view ---------------- */
+function renderProgress(){
+  const el = document.getElementById('progressContent');
+  let html='';
+  [1,2,3,4,5].forEach(dow=>{
+    const day = PROGRAM[dow];
+    html += `<div class="card"><h3>${DAY_NAMES[dow]} · ${day.label}</h3>`;
+    day.exercises.forEach(ex=>{
+      const prog = ensureProgress(ex.id);
+      const lvl = ex.levels[prog.level-1];
+      const best = state.bests[ex.id];
+      const pct = Math.round(100*prog.level/ex.levels.length);
+      html += `
+        <div style="margin:12px 0;">
+          <div class="row"><span style="font-weight:600;font-size:13.5px;">${ex.name}</span>
+            <span class="pill level">Lv ${prog.level}/${ex.levels.length}</span></div>
+          <div class="progressbar mini" style="margin:6px 0;"><i style="width:${pct}%"></i></div>
+          <div class="small muted">${lvl.name} · Best: ${best!==undefined?formatBest(best,lvl.unit):'—'}
+            ${prog.streak>0? ' · Streak: '+prog.streak+'/'+LEVELUP_STREAK : ''}</div>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+  html += `<div class="card"><h3>Weekend Cardio</h3><div class="row"><span class="muted small">This week's total</span><span class="pill good">${weeklyCardioMinutes()} min</span></div></div>`;
+  el.innerHTML = html;
+}
+
+/* ---------------- History view ---------------- */
+function renderHistory(){
+  const el = document.getElementById('historyContent');
+  const dates = new Set([...Object.keys(state.logs), ...Object.keys(state.cardio)]);
+  const sorted = [...dates].sort().reverse().slice(0,45);
+  if(sorted.length===0){
+    el.innerHTML = `<div class="emptystate">No history yet — log your first set from the Today tab.</div>`;
+    return;
+  }
+  let html='';
+  sorted.forEach(ds=>{
+    const [y,m,d] = ds.split('-').map(Number);
+    const dObj = new Date(y,m-1,d);
+    const lines=[];
+    if(state.logs[ds]){
+      Object.keys(state.logs[ds]).forEach(exId=>{
+        const ex = findExercise(exId);
+        if(!ex) return;
+        const sets = state.logs[ds][exId];
+        lines.push(`${ex.name}: ${sets.length} set${sets.length!==1?'s':''} (${sets.map(s=>s.v+(s.unit==='sec'?'s':'')).join(', ')})`);
+      });
+    }
+    if(state.cardio[ds]){
+      state.cardio[ds].forEach(c=> lines.push(`Cardio — ${c.activity}: ${c.minutes} min${c.distance?' · '+c.distance:''}`));
+    }
+    if(lines.length===0) return;
+    html += `<div class="histitem">
+      <div class="date">${DAY_NAMES[dObj.getDay()]}, ${dObj.toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
+      ${lines.map(l=>`<div class="line">${escapeHtml(l)}</div>`).join('')}
+    </div>`;
+  });
+  el.innerHTML = html || `<div class="emptystate">No history yet.</div>`;
+}
+
+/* ---------------- Backup / Restore / Reset ---------------- */
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = dateStr(todayDate());
+  a.href = url;
+  a.download = `jacked20-backup-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded');
+});
+
+document.getElementById('btnImportTrigger').addEventListener('click', ()=>{
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt)=>{
+    try{
+      const parsed = JSON.parse(evt.target.result);
+      if(!parsed || typeof parsed!=='object') throw new Error('bad file');
+      state = Object.assign(defaultState(), parsed);
+      saveState();
+      showToast('Backup restored ✅');
+      switchTab('today');
+    }catch(err){
+      showToast('Could not read that backup file');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(confirm('Erase ALL progress, logs, and cardio history on this device? This cannot be undone.')){
+    state = defaultState();
+    saveState();
+    showToast('All data erased');
+    switchTab('today');
+  }
+});
+
+/* ---------------- Utilities ---------------- */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(()=> t.classList.remove('show'), 2200);
+}
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------------- Init ---------------- */
+switchTab('today');
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{ /* offline caching unavailable */ });
+  });
+}
+</script>
+</body>
+</html>
